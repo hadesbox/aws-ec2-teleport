@@ -54,7 +54,11 @@ ec2.describeInstances(params2, function(err, data) {
 		//console.log(results[0])
 		//process.exit(1)
 		//console.log("<<<<<<<<<<<");
-		if (fs.existsSync(results[0][3].trim()+".pem")) {
+		if(results[0][7]=="stopped"){
+			console.log("Error".red, "machine is".cyan,"STOPPED".red,"you can't teleport to a closed portal.".cyan);
+			process.exit(-1);
+		}
+		else if (fs.existsSync(results[0][3].trim()+".pem")) {
 			if(results[0][5] != "undefined"){
 				//ssh -i innovacion.ireland.pem ubuntu@XXX.XXX.XXX.XXX
 				//we search for the ami architecture ubuntu/centos/redhat
