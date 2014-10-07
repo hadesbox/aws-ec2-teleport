@@ -71,7 +71,10 @@ ec2.describeInstances(params2, function(err, data) {
 					}
 					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("centos") != -1){
 						username = "ec2-user";
-					}					
+					}
+					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("coreos") != -1){
+						username = "core";
+					}
 					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("amzn-ami") != -1){
 						username = "ec2-user";
 					}
