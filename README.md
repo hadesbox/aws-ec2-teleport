@@ -1,11 +1,11 @@
 # AWS-EC2-teleport
 ================
 
-Teleport is a quick tool to jump into your EC2 instances, based on its. If followo the given premises.
+Teleport is a tool to jump into your EC2 instances, based on its name (tagname). It gives useful information like the state (stopped, running) the keypair, the public and private IP address.
 
-It searchs for the given tag name and it will ssh to its public IP (with the right keyname, and user).
+It searchs for the given tag name you provice and it will ssh to the public IP (with the right keyname, and user) of the matching instance.
 
-This tool has been designed to work with multi AWS Accounts. For it to work you need to create a folder structure like the following.
+This tool has been designed to work with multi AWS Accounts. To do this you must keep the the ssh certs (.pem) and the config.json file on different folders, something like the following structure.
 
 
 ``` java
@@ -27,14 +27,14 @@ luis@boxita:~/aws_certs$ tree
 
 * This means one folder per account (or region/account).
 * Each folder must contain the config.json which has the region and the AWS EC2 Api keys to call your service. (future release it may support multi region with single folders)
-* All keynames filenames are the same as the keyname value on yout EC2 account.
+* All key's filename HAS to be the same as the keyname value on your EC2 account.
 
 
 ## Running the command
 
-1. if you do not provide a tagname (i.e. "$teleport") you will get a list of your instances with their tags, and IPs (and other information) from the  current account.
-2. if it finds more than one instance with the matching tag (or partially matching tag), it will list those instances
-3. if it finds exactly one matching instance, then it will ssh to it using the rigth KeyName and "username" (AMZ->ec2user, Ubuntu->ubuntu, Redhat->root, Centos->root) based on the architecture of that machine (AMI info.) if the machine has a public Ip.
+1. if you do not provide a tagname (i.e. just "teleport") you will get a list of your instances with their tags, and IPs (and other information) from the current account.
+2. if you provide a tagname (or a part of it) it will try to find all matching instances for that word. If it matches more than one instance with the matching tag (or partially matching tag), it will list all those instances.
+3. if it finds exactly one matching instance, then it will ssh to it using the right KeyName and "username" (AMZ->ec2user, Ubuntu->ubuntu, Redhat->root, Centos->root) based on the architecture of that machine (AMI info.) if the machine has a public Ip (you can override the usernames by sending them as an option.. se below).
 
 For example if we dont send any params:
 
@@ -51,7 +51,7 @@ running i-vvvvvvvv                   beowulf      account1.california1    10.25.
 it will list ALL the instances in this region-account, but if I provide a partial tagname
 
 ```ruby
-luis@boxita:~/aws_certs/innnovacion$ teleport Neo
+luis@boxita:~/aws_certs/account1$ teleport Neo
 Welcome to Ubuntu 14.04 LTS (GNU/Linux 3.13.0-29-generic x86_64)
 
  * Documentation:  https://help.ubuntu.com/
@@ -71,7 +71,7 @@ it will find it, and __ssh to it__ with the right __KeyName__ (wee magicssss).
 also if you have custom usernames you can send it as an option, for instance to teleport to the "neo" machine with the username "hadesbox", this will ignore the AWS default ssh usernames (which you can review in the code of main.js)
 
 ```
-luis@boxita:~/aws_certs/innnovacion$ teleport Neo --hadesbox
+luis@boxita:~/aws_certs/account1$ teleport Neo --hadesbox
 ```
 
 ## Installing it
