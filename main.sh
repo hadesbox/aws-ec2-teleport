@@ -1,6 +1,6 @@
 #!/bin/sh
 
-node /home/luix/git/node/teleport/./main.js $1 > salida
+node /home/luix/git/node/teleport/./main.js $1 $2 > salida
 
 if [ $? -eq 0 ]; then
    ssh -i $(cat salida)

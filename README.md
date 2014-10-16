@@ -68,6 +68,12 @@ ubuntu@ip-10-0-105-0:~$
 
 it will find it, and __ssh to it__ with the right __KeyName__ (wee magicssss).
 
+also if you have custom usernames you can send it as an option, for instance to teleport to the "neo" machine with the username "hadesbox", this will ignore the AWS default ssh usernames (which you can review in the code of main.js)
+
+```
+luis@boxita:~/aws_certs/innnovacion$ teleport Neo --hadesbox
+```
+
 ## Installing it
 
 Go into the cloned repo dir (which is where the app will live after its installation) and run the install script.

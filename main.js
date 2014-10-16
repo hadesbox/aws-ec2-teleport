@@ -17,16 +17,28 @@ var params2 = {
 
 var results = [];
 
+args = args.slice(2);
+tagname="";
+globalusername="";
+for(i=0;i<args.length;i++){
+	if(args[i].lastIndexOf("--", 0) === 0){
+		globalusername = args[i].substring(2);
+	}
+	else{
+		tagname = args[i];
+	}
+}
+
 ec2.describeInstances(params2, function(err, data) {
 	//console.log("@@@@@@@", data)
 	if (data && data.Reservations) for(item in data.Reservations){
 		ritem = data.Reservations[item];
 		for(tagindex in data.Reservations[item].Instances[0].Tags){
 			tag = data.Reservations[item].Instances[0].Tags[tagindex];
-			if(args.length < 3){
+			if(tagname==""){
 				pushData(ritem, tag);
 			}
-			else if(tag.Value && tag.Key == 'Name' && tag.Value.toLowerCase().indexOf(args[2].toLowerCase()) != -1){
+			else if(tag.Value && tag.Key == 'Name' && tag.Value.toLowerCase().indexOf(tagname.toLowerCase()) != -1){
 				pushData(ritem, tag);
 			}
 			//console.log(tag, ritem.Instances[0].PublicDnsName);
@@ -40,7 +52,7 @@ ec2.describeInstances(params2, function(err, data) {
 		console.log("Error".red, "no results found".grey);
 		process.exit(-2);
 	}
-	else if(results.length > 1 || args.length  == 2){
+	else if(results.length > 1 || tagname==""){
 		//console.log(results)
 		console.log("State  ","InstId    ","                      Tag", "                  KeyName", "      PrivateIp", "       PublicIp");
 		console.log("=========================================================================================================");
@@ -81,13 +93,16 @@ ec2.describeInstances(params2, function(err, data) {
 					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("ubuntu") != -1){
 						username = "ubuntu";
 					}
+					if(globalusername!=""){
+						username = globalusername;
+					}
 					console.log(results[0][3].trim()+".pem", username+"@"+results[0][5].trim());
 					process.exit(0);
 				});
 			}
 			else{
 				console.log("Error".red, "no public IP address for instance".cyan, results[0][1].trim(), ".".cyan);
-				process.exit(-1);
+				process.exit(0);
 			}
 		}
 		else{
