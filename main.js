@@ -86,30 +86,42 @@ ec2.describeInstances(params2, function(err, data) {
 			if(results[0][5] != "undefined"){
 				//ssh -i innovacion.ireland.pem ubuntu@XXX.XXX.XXX.XXX
 				//we search for the ami architecture ubuntu/centos/redhat
-				ec2.describeImages({ ImageIds: [results[0][6]] }, function(err, dataAMI) {					
+				ec2.describeImages({ ImageIds: [results[0][6]] }, function(err, dataAMI) {
+
+					if(globalusername!=""){
+						console.log(results[0][3].trim()+".pem", globalusername+"@"+results[0][5].trim());
+						process.exit(0);
+					}
+
 					username = "ubuntu";
 					//console.log(dataAMI);
 					//process.exit(1)
-					if(dataAMI.Images[0].Name.toLowerCase().indexOf("rhel") != -1){
-						username = "ec2-user";
+
+					try {
+						if(dataAMI.Images[0].Name.toLowerCase().indexOf("rhel") != -1){
+							username = "ec2-user";
+						}
+						else if(dataAMI.Images[0].Name.toLowerCase().indexOf("centos") != -1){
+							username = "ec2-user";
+						}
+						else if(dataAMI.Images[0].Name.toLowerCase().indexOf("coreos") != -1){
+							username = "core";
+						}
+						else if(dataAMI.Images[0].Name.toLowerCase().indexOf("amzn-ami") != -1){
+							username = "ec2-user";
+						}
+						else if(dataAMI.Images[0].Name.toLowerCase().indexOf("ubuntu") != -1){
+							username = "ubuntu";
+						}					    
 					}
-					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("centos") != -1){
-						username = "ec2-user";
+					catch(err) {
+						consoole.log("ERROR with Images".red, dataAMI, err);
+						process.exit(-1);
 					}
-					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("coreos") != -1){
-						username = "core";
-					}
-					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("amzn-ami") != -1){
-						username = "ec2-user";
-					}
-					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("ubuntu") != -1){
-						username = "ubuntu";
-					}
-					if(globalusername!=""){
-						username = globalusername;
-					}
+
 					console.log(results[0][3].trim()+".pem", username+"@"+results[0][5].trim());
-					process.exit(0);
+					process.exit(0);					
+					
 				});
 			}
 			else{
