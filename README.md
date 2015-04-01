@@ -76,7 +76,7 @@ luis@boxita:~/aws_certs/account1$ teleport Neo --hadesbox
 
 ## Installing it
 
-Go into the cloned repo dir (which is where the app will live after its installation) and run global installation of npm.
+Go into the cloned repo dir and run global installation of npm of it.
 ```
 luis@boxita:~/git/aws-ec2-teleport$ sudo npm install -g
 npm http GET https://registry.npmjs.org/colors
