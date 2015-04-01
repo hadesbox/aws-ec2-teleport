@@ -95,3 +95,4 @@ teleport@1.0.0 /usr/local/lib/node_modules/teleport
 └── aws-sdk@2.1.20 (xmlbuilder@0.4.2, xml2js@0.2.6)
 ```
 
+notice how the main.sh is installed in __/usr/local/lib/node_modules/teleport/__, double check this is correct or it will not work (or edit the main.sh and set the path to main.js to this).
