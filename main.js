@@ -6,6 +6,18 @@ var colors = require('colors');
 var AWS = require('aws-sdk');
 var fs = require('fs');
 
+try {
+
+	if (!fs.existsSync('config.json')) { 
+    	console.log("ERROR2".red, "config.json".blue, "doesnt exist on current folder")
+        process.exit(-1);
+    }
+}
+catch (e) {
+    console.log("ERROR1".red, "config.json".blue, "doesnt exist on current folder", e)
+    process.exit(-1);
+}
+
 AWS.config.loadFromPath('config.json');
 
 var ec2 = new AWS.EC2();

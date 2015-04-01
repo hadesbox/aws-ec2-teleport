@@ -1,12 +1,14 @@
 #!/bin/sh
 
-node /home/luix/git/node/teleport/./main.js $1 $2 > salida
+export NODE_PATH=/usr/local/lib/node_modules/teleport/node_modules
+
+node /usr/local/lib/node_modules/teleport/main.js $1 $2 > /tmp/salida
 
 if [ $? -eq 0 ]; then
    ssh -i $(cat salida)
    exit;
 else
-   cat salida
-   rm salida
+   cat /tmp/salida
+   rm /tmp/salida
    exit;
 fi

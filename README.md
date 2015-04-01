@@ -3,7 +3,7 @@
 
 Teleport is a tool to jump into your EC2 instances, based on its name (tagname). It gives useful information like the state (stopped, running) the keypair, the public and private IP address.
 
-It searchs for the given tag name you provice and it will ssh to the public IP (with the right keyname, and user) of the matching instance.
+It searchs for the given tag name you provide and it will ssh to the public IP (with the right keyname, and user) of the matching instance.
 
 This tool has been designed to work with multi AWS Accounts. To do this you must keep the the ssh certs (.pem) and the config.json file on different folders, something like the following structure.
 
@@ -76,16 +76,22 @@ luis@boxita:~/aws_certs/account1$ teleport Neo --hadesbox
 
 ## Installing it
 
-Go into the cloned repo dir (which is where the app will live after its installation) and run the install script.
+Go into the cloned repo dir (which is where the app will live after its installation) and run global installation of npm.
 ```
-luis@boxita:~/git/aws-ec2-teleport$ sudo ./install.sh
+luis@boxita:~/git/aws-ec2-teleport$ sudo npm install -g
+npm http GET https://registry.npmjs.org/colors
+npm http GET https://registry.npmjs.org/aws-sdk
+npm http 304 https://registry.npmjs.org/colors
+npm http 304 https://registry.npmjs.org/aws-sdk
+npm http GET https://registry.npmjs.org/xml2js/0.2.6
+npm http GET https://registry.npmjs.org/xmlbuilder/0.4.2
+npm http 304 https://registry.npmjs.org/xml2js/0.2.6
+npm http 304 https://registry.npmjs.org/xmlbuilder/0.4.2
+npm http GET https://registry.npmjs.org/sax/0.4.2
+npm http 304 https://registry.npmjs.org/sax/0.4.2
+/usr/local/bin/teleport -> /usr/local/lib/node_modules/teleport/main.sh
+teleport@1.0.0 /usr/local/lib/node_modules/teleport
+├── colors@1.0.3
+└── aws-sdk@2.1.20 (xmlbuilder@0.4.2, xml2js@0.2.6)
 ```
 
-alternatively you can review the code of the install.sh and manually execute it.
-
-```
-luis@boxita:~/git/aws-ec2-teleport$ npm install
-luis@boxita:~/git/aws-ec2-teleport$ sudo ln -s $(pwd)/main.sh /usr/bin/teleport
-luis@boxita:~/git/aws-ec2-teleport$ chmod +x $(pwd)/main.sh
-luis@boxita:~/git/aws-ec2-teleport$ chmod +x $(pwd)/main.js
-```

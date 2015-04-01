@@ -1,15 +1,17 @@
 {
-  "name": "ssht",
-  "version": "0.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "aws-sdk": "*",
-    "colors": "*"
-  }
+    "name": "teleport",
+    "version": "1.0.0",
+    "description": "a CLI tool for teleporting into EC2 instances based on on its tag name",
+    "main": "main.sh",
+    "scripts": {},
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "aws-sdk": "*",
+        "colors": "*"
+    },
+    "bin": {
+        "teleport": "main.sh"
+    },
+    "preferGlobal": true
 }
