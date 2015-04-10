@@ -29,6 +29,8 @@ var params2 = {
 
 var results = [];
 
+var hit = null;
+
 args = args.slice(2);
 tagname="";
 globalusername="";
@@ -60,11 +62,56 @@ ec2.describeInstances(params2, function(err, data) {
 	}
 	//console.log(results)
 	//process.exit(-10)	
-	if(results.length == 0){
-		console.log("Error".red, "no results found".grey);
-		process.exit(-2);
+	if(hit != null) {		
+		//console.log(">>>>>>>>>>>");
+		//console.log(hit)
+		//process.exit(1)
+		//console.log("<<<<<<<<<<<");
+		if(hit[7]=="stopped"){
+			console.log("Error".red, "machine is".cyan,"STOPPED".red,"you can't teleport to a closed portal.".cyan);
+			process.exit(-1);
+		}
+		else if (fs.existsSync(hit[3].trim()+".pem")) {
+			if(hit[5] != "undefined"){
+				//ssh -i innovacion.ireland.pem ubuntu@XXX.XXX.XXX.XXX
+				//we search for the ami architecture ubuntu/centos/redhat
+				ec2.describeImages({ ImageIds: [hit[6]] }, function(err, dataAMI) {					
+					username = "ubuntu";
+					//console.log(dataAMI);
+					//process.exit(1)
+					if(dataAMI.Images[0].Name.toLowerCase().indexOf("rhel") != -1){
+						username = "ec2-user";
+					}
+					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("centos") != -1){
+						username = "ec2-user";
+					}
+					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("coreos") != -1){
+						username = "core";
+					}
+					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("amzn-ami") != -1){
+						username = "ec2-user";
+					}
+					else if(dataAMI.Images[0].Name.toLowerCase().indexOf("ubuntu") != -1){
+						username = "ubuntu";
+					}
+					if(globalusername!=""){
+						username = globalusername;
+					}
+					console.log(hit[3].trim()+".pem", username+"@"+hit[5].trim());
+					process.exit(0);
+				});
+			}
+			else{
+				console.log("Error".red, "no public IP address for instance".cyan, hit[1].trim(), ".".cyan);
+				process.exit(0);
+			}
+		}
+		else{
+			console.log("Error".red, "keypair".cyan, hit[3].trim().grey, "for instance".cyan, hit[1].trim(), "doesn't exist.".cyan);
+			process.exit(-1);
+		}		
 	}
-	else if(results.length > 1 || tagname==""){
+    else if(results.length > 1 || tagname==""){
 		//console.log(results)
 		console.log("State  ","InstId    ","                      Tag", "                  KeyName", "      PrivateIp", "       PublicIp");
 		console.log("=========================================================================================================");
@@ -72,68 +119,11 @@ ec2.describeInstances(params2, function(err, data) {
 			console.log(results[i][7].grey, results[i][1].cyan, results[i][2].green, results[i][3].red, results[i][4].yellow, results[i][5]);
 		}	
 		process.exit(-1);
-	}
-	else {		
-		//console.log(">>>>>>>>>>>");
-		//console.log(results[0])
-		//process.exit(1)
-		//console.log("<<<<<<<<<<<");
-		if(results[0][7]=="stopped"){
-			console.log("Error".red, "machine is".cyan,"STOPPED".red,"you can't teleport to a closed portal.".cyan);
-			process.exit(-1);
-		}
-		else if (fs.existsSync(results[0][3].trim()+".pem")) {
-			if(results[0][5] != "undefined"){
-				//ssh -i innovacion.ireland.pem ubuntu@XXX.XXX.XXX.XXX
-				//we search for the ami architecture ubuntu/centos/redhat
-				ec2.describeImages({ ImageIds: [results[0][6]] }, function(err, dataAMI) {
-
-					if(globalusername!=""){
-						console.log(results[0][3].trim()+".pem", globalusername+"@"+results[0][5].trim());
-						process.exit(0);
-					}
-
-					username = "ubuntu";
-					//console.log(dataAMI);
-					//process.exit(1)
-
-					try {
-						if(dataAMI.Images[0].Name.toLowerCase().indexOf("rhel") != -1){
-							username = "ec2-user";
-						}
-						else if(dataAMI.Images[0].Name.toLowerCase().indexOf("centos") != -1){
-							username = "ec2-user";
-						}
-						else if(dataAMI.Images[0].Name.toLowerCase().indexOf("coreos") != -1){
-							username = "core";
-						}
-						else if(dataAMI.Images[0].Name.toLowerCase().indexOf("amzn-ami") != -1){
-							username = "ec2-user";
-						}
-						else if(dataAMI.Images[0].Name.toLowerCase().indexOf("ubuntu") != -1){
-							username = "ubuntu";
-						}					    
-					}
-					catch(err) {
-						consoole.log("ERROR with Images".red, dataAMI, err);
-						process.exit(-1);
-					}
-
-					console.log(results[0][3].trim()+".pem", username+"@"+results[0][5].trim());
-					process.exit(0);					
-					
-				});
-			}
-			else{
-				console.log("Error".red, "no public IP address for instance".cyan, results[0][1].trim(), ".".cyan);
-				process.exit(0);
-			}
-		}
-		else{
-			console.log("Error".red, "keypair".cyan, results[0][3].trim().grey, "for instance".cyan, results[0][1].trim(), "doesn't exist.".cyan);
-			process.exit(-1);
-		}		
 	}	
+	else {
+		console.log("Error".red, "no results found".grey);
+		process.exit(-2);
+	}
 });
 
 
@@ -173,6 +163,18 @@ function pushData(ritem, tag){
 		console.log(ex)
 		process.exit(-1)
 	}
+
+	if(tag.Value == tagname && ritem.Instances[0].State.Name == "running"){
+		hit = [ritem.ReservationId, 
+		ritem.Instances[0].InstanceId, 
+		pad(tag.Value, 25),
+		pad(val2, 25),
+		pad(val3, 15),
+		pad(val4, 15),
+		ritem.Instances[0].ImageId,
+		ritem.Instances[0].State.Name.substring(0,7)]
+	}
+
 	results.push([ritem.ReservationId, 
 		ritem.Instances[0].InstanceId, 
 		pad(tag.Value, 25),
@@ -180,7 +182,7 @@ function pushData(ritem, tag){
 		pad(val3, 15),
 		pad(val4, 15),
 		ritem.Instances[0].ImageId,
-		ritem.Instances[0].State.Name]);
+		ritem.Instances[0].State.Name.substring(0,7)]);
 }
 
 function pad(str, length){
