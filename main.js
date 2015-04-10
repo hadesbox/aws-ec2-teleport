@@ -164,7 +164,7 @@ function pushData(ritem, tag){
 		process.exit(-1)
 	}
 
-	if(tag.Value == tagname && ritem.Instances[0].State.Name == "running"){
+	if(tag.Value.toUpperCase() == tagname.toUpperCase() && ritem.Instances[0].State.Name == "running"){
 		hit = [ritem.ReservationId, 
 		ritem.Instances[0].InstanceId, 
 		pad(tag.Value, 25),
