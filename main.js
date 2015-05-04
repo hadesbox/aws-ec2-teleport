@@ -22,11 +22,6 @@ AWS.config.loadFromPath('config.json');
 
 var ec2 = new AWS.EC2();
 
-var params2 = {
-  DryRun: false,
-  MaxResults: 50
-};
-
 var results = [];
 
 var hit = null;
@@ -43,6 +38,8 @@ for(i=0;i<args.length;i++){
 	}
 }
 
+var params2 = genParams(tagname);
+
 ec2.describeInstances(params2, function(err, data) {
 	//console.log("@@@@@@@", data)
 	if (data && data.Reservations) for(item in data.Reservations){
@@ -58,10 +55,8 @@ ec2.describeInstances(params2, function(err, data) {
 			//console.log(tag, ritem.Instances[0].PublicDnsName);
 			//console.log(JSON.stringify(ritem, null, 3));
 		}
-
 	}
-	//console.log(results)
-	//process.exit(-10)	
+
 	if(hit != null) {		
 		//console.log(">>>>>>>>>>>");
 		//console.log(hit)
@@ -73,12 +68,15 @@ ec2.describeInstances(params2, function(err, data) {
 		}
 		else if (fs.existsSync(hit[3].trim()+".pem")) {
 			if(hit[5] != "undefined"){
-				//ssh -i innovacion.ireland.pem ubuntu@XXX.XXX.XXX.XXX
-				//we search for the ami architecture ubuntu/centos/redhat
+
+				if(hit[8]!=""){
+					username = hit[8];
+					console.log(hit[3].trim()+".pem", username+"@"+hit[5].trim());
+					process.exit(0);
+				}
+
 				ec2.describeImages({ ImageIds: [hit[6]] }, function(err, dataAMI) {					
 					username = "ubuntu";
-					//console.log(dataAMI);
-					//process.exit(1)
 					if(dataAMI.Images[0].Name.toLowerCase().indexOf("rhel") != -1){
 						username = "ec2-user";
 					}
@@ -153,7 +151,9 @@ function getPublicIp(item){
 }
 
 function pushData(ritem, tag){
+
 	val2="undefined"; val3="undefined"; val4="undefined";
+
 	try{
 		val2 = ritem.Instances[0].KeyName;
 		val4 = getPublicIp(ritem),
@@ -164,7 +164,7 @@ function pushData(ritem, tag){
 		process.exit(-1)
 	}
 
-	if(tag.Value.toUpperCase() == tagname.toUpperCase() && ritem.Instances[0].State.Name == "running"){
+	if(tagname!="" && tag.Value.toUpperCase().indexOf(tagname.toUpperCase()) != -1 && ritem.Instances[0].State.Name == "running"){
 		hit = [ritem.ReservationId, 
 		ritem.Instances[0].InstanceId, 
 		pad(tag.Value, 25),
@@ -172,7 +172,8 @@ function pushData(ritem, tag){
 		pad(val3, 15),
 		pad(val4, 15),
 		ritem.Instances[0].ImageId,
-		ritem.Instances[0].State.Name.substring(0,7)]
+		ritem.Instances[0].State.Name.substring(0,7),
+		findSSHUser(ritem.Instances[0].Tags)]
 	}
 
 	results.push([ritem.ReservationId, 
@@ -182,11 +183,30 @@ function pushData(ritem, tag){
 		pad(val3, 15),
 		pad(val4, 15),
 		ritem.Instances[0].ImageId,
-		ritem.Instances[0].State.Name.substring(0,7)]);
+		ritem.Instances[0].State.Name.substring(0,7),
+		findSSHUser(ritem.Instances[0].Tags)]);
+}
+
+function findSSHUser(items){
+	for(i=0;i<items.length;i++){
+		if(items[i].Key == 'ssh_user'){
+			return items[i].Value
+		}
+	}
+	return "###"
 }
 
 function pad(str, length){
 	blank="";
 	for(i=0;i<length;i++) blank+=" ";
 	return (blank + str).slice(-1*length)
+}
+
+function genParams(tagname){
+	if(tagname==""){
+		return { DryRun: false, MaxResults: 50 };
+	}
+	else {
+		return { DryRun: false, MaxResults: 50, Filters: [ { Name: 'tag:Name', Values: ["*"+tagname+"*"] } ] };
+	}
 }
