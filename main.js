@@ -41,16 +41,14 @@ for(i=0;i<args.length;i++){
 var params2 = genParams(tagname);
 
 ec2.describeInstances(params2, function(err, data) {
-	//console.log("@@@@@@@", data)
+	//console.log("@@@@@@@", JSON.stringify(data, null, 3))
 	if (data && data.Reservations) for(item in data.Reservations){
 		ritem = data.Reservations[item];
 		for(tagindex in data.Reservations[item].Instances[0].Tags){
 			tag = data.Reservations[item].Instances[0].Tags[tagindex];
-			if(tagname==""){
+			if(tag.Value != "" && tag.Key == 'Name'){
 				pushData(ritem, tag);
-			}
-			else if(tag.Value && tag.Key == 'Name' && tag.Value.toLowerCase().indexOf(tagname.toLowerCase()) != -1){
-				pushData(ritem, tag);
+				break;
 			}
 			//console.log(tag, ritem.Instances[0].PublicDnsName);
 			//console.log(JSON.stringify(ritem, null, 3));
@@ -69,7 +67,7 @@ ec2.describeInstances(params2, function(err, data) {
 		else if (fs.existsSync(hit[3].trim()+".pem")) {
 			if(hit[5] != "undefined"){
 
-				if(hit[8]!=""){
+				if(hit[8]!="-"){
 					username = hit[8];
 					console.log(hit[3].trim()+".pem", username+"@"+hit[5].trim());
 					process.exit(0);
@@ -111,10 +109,10 @@ ec2.describeInstances(params2, function(err, data) {
 	}
     else if(results.length > 1 || tagname==""){
 		//console.log(results)
-		console.log("State  ","InstId    ","                      Tag", "                  KeyName", "      PrivateIp", "       PublicIp");
-		console.log("=========================================================================================================");
+		console.log("State  ","InstId    ","                      Tag", "                  KeyName", "      PrivateIp", "       PublicIp", "SSHUser");
+		console.log("================================================================================================================");
 		for(i=0;i<results.length;i++){
-			console.log(results[i][7].grey, results[i][1].cyan, results[i][2].green, results[i][3].red, results[i][4].yellow, results[i][5]);
+			console.log(results[i][7].grey, results[i][1].cyan, results[i][2].green, results[i][3].red, results[i][4].yellow, results[i][5], results[i][8]);
 		}	
 		process.exit(-1);
 	}	
@@ -193,7 +191,7 @@ function findSSHUser(items){
 			return items[i].Value
 		}
 	}
-	return "###"
+	return "-"
 }
 
 function pad(str, length){
